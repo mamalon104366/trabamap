@@ -1,0 +1,1 @@
+# Trabamap usa solo la biblioteca estándar de Python. Nmap debe instalarse aparte.

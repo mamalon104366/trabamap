@@ -1,0 +1,104 @@
+{
+  "name": "trabamap",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Explorador visual de puertos con Nmap y explicaciones claras en español.",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5173 --strictPort",
+    "desktop": "node scripts/desktop-dev.cjs",
+    "build": "vite build",
+    "backend:win": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-backend.ps1",
+    "package:win": "node scripts/package-win.cjs",
+    "start": "node scripts/desktop-dev.cjs",
+    "runtime:win": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-python-runtime.ps1"
+  },
+  "dependencies": {
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@fontsource/manrope": "^5.3.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "electron": "^44.7.2",
+    "electron-builder": "^26.15.3",
+    "vite": "^6.0.5"
+  },
+  "build": {
+    "appId": "com.trabamap.desktop",
+    "productName": "TrabaMap",
+    "electronDist": "node_modules/electron/dist",
+    "asar": true,
+    "directories": {
+      "output": "artifacts/windows",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "build/python-runtime",
+        "to": "python"
+      },
+      {
+        "from": ".",
+        "to": "engine",
+        "filter": [
+          "main.py",
+          "core/*.py"
+        ]
+      },
+      {
+        "from": "build/trabamap.ico",
+        "to": "trabamap.ico"
+      }
+    ],
+    "win": {
+      "icon": "build/trabamap.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "TrabaMap",
+      "installerIcon": "build/trabamap.ico",
+      "uninstallerIcon": "build/trabamap.ico",
+      "installerSidebar": "build/installer-sidebar.bmp",
+      "uninstallerSidebar": "build/installer-sidebar.bmp",
+      "installerLanguages": [
+        "es_ES"
+      ],
+      "language": "1034",
+      "runAfterFinish": true,
+      "artifactName": "TrabaMap-Instalador-${version}-${arch}.${ext}"
+    },
+    "portable": {
+      "requestExecutionLevel": "user",
+      "splashImage": "build/portable-splash.bmp",
+      "unpackDirName": "TrabamapPortable",
+      "artifactName": "TrabaMap-Portable-${version}-${arch}.${ext}"
+    }
+  }
+}
