@@ -7,6 +7,7 @@ const os = require('node:os');
 const { identifyNetwork } = require('./discovery.cjs');
 const { startDhcpListener, dhcpStatus, dhcpFor } = require('./dhcp.cjs');
 const security = require('./security.cjs');
+const { installNmap } = require('./nmap-setup.cjs');
 
 function pythonCommand() { return process.platform === 'win32' ? 'py' : 'python3'; }
 function pythonArgs() { return process.platform === 'win32' ? ['-3'] : []; }
@@ -310,6 +311,24 @@ ipcMain.handle('tmap:system', async () => {
   return { ...engine, dhcp_listener: dhcpStatus(), security: security.loadSettings(paths().settings), interfaces, local_inventory: inventory, adb_inventory: android, gateway: defaultGateway(), network_cidr: active?.network || active?.cidr || '', local_ip: active?.address || engine.local_ip || '127.0.0.1', hostname: os.hostname() };
 });
 ipcMain.handle('tmap:reports', () => runBackend('reports-json'));
+let nmapInstallRunning = false;
+ipcMain.handle('tmap:nmap-install', async event => {
+  if (nmapInstallRunning) throw new Error('La instalación de Nmap ya está en curso.');
+  nmapInstallRunning = true;
+  const sender = event.sender;
+  try {
+    const result = await installNmap({
+      folder: path.join(app.getPath('temp'), 'TrabaMap'),
+      onProgress: progress => { if (!sender.isDestroyed()) sender.send('tmap:nmap-install-progress', progress); },
+      open: file => shell.openPath(file),
+    });
+    appendLog({ type: 'nmap-install', target: `Nmap ${result.version}`, message: `Instalador oficial descargado de nmap.org, firma de ${result.signer} verificada y abierto` });
+    return { version: result.version };
+  } catch (error) {
+    appendLog({ type: 'scan-error', target: 'Instalación de Nmap', message: error.message });
+    throw error;
+  } finally { nmapInstallRunning = false; }
+});
 ipcMain.handle('tmap:policy-check', (_event, request) => security.evaluate(String(request?.target || ''), request?.options || {}, security.loadSettings(paths().settings)));
 ipcMain.handle('tmap:settings-get', () => security.loadSettings(paths().settings));
 ipcMain.handle('tmap:settings-set', (_event, value) => {

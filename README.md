@@ -42,6 +42,8 @@ El logo vive como vector en `src/icons.jsx`. `py -3 scripts/create-brand-assets.
 | Motor integrado (descubrir equipos, puertos TCP, identificación por mDNS/UPnP/DHCP) | Sí; funciona sin instalar nada más |
 | Nmap y Npcap | **No.** Su licencia prohíbe redistribuirlos dentro de otro producto sin una licencia OEM de pago |
 
+**Instalar Nmap desde la propia app:** si Nmap no está, la barra lateral muestra el botón **Instalar Nmap completo**. TrabaMap descarga el instalador oficial directamente de nmap.org, comprueba que tiene una firma digital válida de Nmap Software LLC (si no, lo borra) y lo abre; el usuario solo sigue el asistente de Nmap, que también instala Npcap. Al volver a la ventana, TrabaMap lo detecta solo. Así nadie tiene que buscar ni descargar nada a mano, y no se redistribuye ningún archivo de Nmap (`electron/nmap-setup.cjs`).
+
 Sin Nmap la aplicación abre y trabaja con su **motor integrado**: descubre los equipos de la red, los identifica y revisa sus puertos TCP (16 de las 66 tarjetas del catálogo). Para versiones de servicios, sistema operativo por huella, UDP y scripts NSE hay que instalar Nmap desde [nmap.org](https://nmap.org/download.html); la barra lateral lo indica y enlaza la descarga oficial, y al volver a abrir TrabaMap lo detecta solo.
 
 ## Parámetros de seguridad
@@ -118,9 +120,9 @@ Genera en `artifacts/windows/`:
 
 | Archivo | Para qué | Funciona con el Control inteligente de aplicaciones de Windows 11 |
 | --- | --- | --- |
-| `TrabaMap-1.0.0-win-x64.zip` | **Forma recomendada de compartir la app.** Se descomprime y se abre `TrabaMap.exe` | Sí (comprobado) |
-| `TrabaMap-Instalador-1.0.0-x64.exe` | Instalador clásico con accesos directos | No: es un ejecutable sin firma |
-| `TrabaMap-Portable-1.0.0-x64.exe` | Un solo archivo que se ejecuta sin instalar | No: es un ejecutable sin firma |
+| `TrabaMap-1.0.1-win-x64.zip` | **Forma recomendada de compartir la app.** Se descomprime y se abre `TrabaMap.exe` | Sí (comprobado) |
+| `TrabaMap-Instalador-1.0.1-x64.exe` | Instalador clásico con accesos directos | No: es un ejecutable sin firma |
+| `TrabaMap-Portable-1.0.1-x64.exe` | Un solo archivo que se ejecuta sin instalar | No: es un ejecutable sin firma |
 
 Por qué el .zip funciona donde los .exe no: Windows 11 puede traer activo el **Control inteligente de aplicaciones**, que bloquea cualquier ejecutable sin firma digital que no conozca. El .zip no contiene ninguno propio: usa el ejecutable de Electron tal como lo publica ese proyecto y el intérprete oficial de Python firmado por la Python Software Foundation (`scripts/build-python-runtime.ps1`), y el motor viaja como archivos `.py`. Los instaladores, en cambio, son ejecutables generados aquí y solo dejarían de bloquearse firmándolos con un certificado de firma de código. En equipos sin esa protección, los .exe muestran el aviso de SmartScreen ("Más información → Ejecutar de todas formas").
 

@@ -12,5 +12,7 @@ contextBridge.exposeInMainWorld('trabamap', {
   identify: request => ipcRenderer.invoke('tmap:identify', request),
   policyCheck: request => ipcRenderer.invoke('tmap:policy-check', request),
   settings: () => ipcRenderer.invoke('tmap:settings-get'),
+  installNmap: () => ipcRenderer.invoke('tmap:nmap-install'),
+  onNmapInstall: callback => { const listener = (_event, payload) => callback(payload); ipcRenderer.on('tmap:nmap-install-progress', listener); return () => ipcRenderer.removeListener('tmap:nmap-install-progress', listener); },
   saveSettings: value => ipcRenderer.invoke('tmap:settings-set', value)
 });

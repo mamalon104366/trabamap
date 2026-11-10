@@ -21,7 +21,7 @@ export const VIEW_LABELS = Object.fromEntries(NAV_GROUPS.flatMap(group => group.
 
 const initials = name => String(name || 'TM').replace(/[^\p{L}\p{N} ._-]/gu, '').split(/[\s._-]+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase() || 'TM';
 
-export function Sidebar({ view, go, collapsed, setCollapsed, counts, system, isReady, hasNmap, busy, onDiscover, onSearch, onRefresh, interfaces, activeAddress, setActiveAddress, theme, toggleTheme }) {
+export function Sidebar({ view, go, collapsed, setCollapsed, counts, system, isReady, hasNmap, nmapSetup, onInstallNmap, busy, onDiscover, onSearch, onRefresh, interfaces, activeAddress, setActiveAddress, theme, toggleTheme }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const userRef = useRef(null);
   const navRef = useRef(null);
@@ -75,7 +75,10 @@ export function Sidebar({ view, go, collapsed, setCollapsed, counts, system, isR
         <button className="btn-primary" onClick={isReady ? onDiscover : onRefresh} disabled={busy} title={isReady ? 'Buscar dispositivos en la red local' : 'Volver a comprobar Nmap'}>
           <Icon name={isReady ? 'wifi' : 'refresh'} size={16}/><span>{busy ? 'Escaneo en curso…' : isReady ? 'Buscar dispositivos' : 'Comprobar de nuevo'}</span>
         </button>
-        {isReady && !hasNmap && <a className="sb-card-link" href="https://nmap.org/download.html" target="_blank" rel="noreferrer">Obtener Nmap en nmap.org</a>}
+        {isReady && !hasNmap && <button className="sb-install" onClick={onInstallNmap} disabled={nmapSetup?.running} title="Descarga el instalador oficial desde nmap.org, verifica su firma y lo abre">
+          <Icon name={nmapSetup?.running ? 'loader' : 'download'} size={15} className={nmapSetup?.running ? 'spin' : ''}/><span>{nmapSetup?.running ? `${nmapSetup.message || 'Preparando…'}${nmapSetup.percent != null ? ` ${nmapSetup.percent}%` : ''}` : 'Instalar Nmap completo'}</span>
+        </button>}
+        {isReady && !hasNmap && nmapSetup?.note && <small className={`sb-install-note ${nmapSetup.error ? 'is-error' : ''}`}>{nmapSetup.note}</small>}
       </div>
 
       <div className="sb-user-wrap" ref={userRef}>

@@ -83,6 +83,17 @@ function App() {
   const [guideSection, setGuideSection] = useState('');
   const [theme, setTheme] = useState(() => { try { return localStorage.getItem('trabamap.theme') === 'light' ? 'light' : 'dark'; } catch { return 'dark'; } });
   const [confirmRequest, setConfirmRequest] = useState(null);
+  const [nmapSetup, setNmapSetup] = useState(null);
+  const installNmap = async () => {
+    if (!api.installNmap) { setNmapSetup({ note: 'Abre TrabaMap como aplicación de escritorio para instalar Nmap.', error: true }); return; }
+    setNmapSetup({ running: true, message: 'Preparando…' });
+    const stop = api.onNmapInstall?.(progress => setNmapSetup({ running: true, message: progress.stage === 'descargar' ? 'Descargando' : progress.message, percent: progress.stage === 'descargar' ? progress.percent : null }));
+    try {
+      const done = await api.installNmap();
+      setNmapSetup({ note: `Se abrió el instalador oficial de Nmap ${done.version}. Sigue sus pasos (deja marcado Npcap); al terminar, TrabaMap lo detecta solo.` });
+    } catch (installError) { setNmapSetup({ note: cleanMessage(installError) || 'No se pudo instalar Nmap.', error: true }); }
+    finally { stop?.(); }
+  };
   const toggleTheme = useCallback(() => setTheme(value => value === 'light' ? 'dark' : 'light'), []);
   useEffect(() => { document.documentElement.dataset.theme = theme; try { localStorage.setItem('trabamap.theme', theme); } catch { /* almacenamiento no disponible */ } }, [theme]);
   const askConfirm = (needs, targetValue) => new Promise(resolve => setConfirmRequest({ needs, target: targetValue, resolve }));
@@ -253,6 +264,12 @@ function App() {
   const hasNmap = Boolean(system?.nmap && !['No disponible', 'No detectado'].includes(system.nmap)) && system?.engine !== 'integrado';
   // Sin Nmap sigue habiendo motor: el integrado descubre equipos y revisa puertos TCP.
   const isReady = hasNmap || system?.engine === 'integrado';
+  useEffect(() => {
+    if (hasNmap || !rawSystem) return undefined;
+    const onFocus = () => { refresh(); };
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
+  }, [hasNmap, Boolean(rawSystem)]);
 
   const deviceChoices = useMemo(() => (networkScan?.hosts || []).filter(item => item.status === 'up').map(item => {
     const info = describeDevice(item, isLocalHost(item.address, networkScan?.target, system) ? system?.local_inventory : item.local_inventory, item.address === system?.gateway);
@@ -284,7 +301,7 @@ function App() {
 
     <Sidebar view={view} go={go} collapsed={collapsed} setCollapsed={setCollapsed}
       counts={{ network: respondingCount(networkScan), history: reports.length, logs: logs.length }}
-      system={system} isReady={isReady} hasNmap={hasNmap} theme={theme} toggleTheme={toggleTheme} busy={busy} onDiscover={discoverNetwork} onSearch={() => setPaletteOpen(true)} onRefresh={refresh}
+      system={system} isReady={isReady} hasNmap={hasNmap} nmapSetup={nmapSetup} onInstallNmap={installNmap} theme={theme} toggleTheme={toggleTheme} busy={busy} onDiscover={discoverNetwork} onSearch={() => setPaletteOpen(true)} onRefresh={refresh}
       interfaces={interfaces} activeAddress={iface?.address || ''} setActiveAddress={setIfaceAddress}/>
 
     <div className="app-content">

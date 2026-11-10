@@ -11,7 +11,7 @@ from core.explainer import enrich
 from core import policy
 
 APP_NAME = "TrabaMap"
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 REPORTS = Path(os.environ.get("TRABAMAP_REPORTS", Path(__file__).parent / "reports"))
 
 def save_report(result: dict) -> str:

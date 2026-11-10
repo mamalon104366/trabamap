@@ -1,6 +1,6 @@
 {
   "name": "trabamap",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "Explorador visual de puertos con Nmap y explicaciones claras en español.",
   "main": "electron/main.cjs",
